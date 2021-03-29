@@ -13,8 +13,6 @@ services:
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-    ports:
-      - "5402:5432"
     volumes:
       -  vol-db-ods:/var/lib/postgresql/data
     restart: always
@@ -27,8 +25,6 @@ services:
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-    ports:
-      - "5401:5432"
     volumes:
       -  vol-db-admin:/var/lib/postgresql/data
     restart: always
@@ -59,9 +55,9 @@ services:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       API_MODE: "Sandbox"
-      ODS_DB: db-ods
-      ADMIN_DB: db-admin
-      "ApiSettings:PathBase": "$ODS_VIRTUAL_NAME"
+      ODS_DB: ods-pgbouncer
+      ADMIN_DB: admin-pgbouncer
+      ApiSettings__PathBase: "${ODS_VIRTUAL_NAME}"
     volumes:
       - ${LOGS_FOLDER}:/app/logs
     depends_on:
@@ -105,7 +101,8 @@ services:
     environment:
       POPULATED_KEY: "${POPULATED_KEY}"
       POPULATED_SECRET: "${POPULATED_SECRET}"
-      WebApiVersionUrl: "https://localhost/${ODS_VIRTUAL_NAME}"
+      WebApiVersionUrl: "https://localhost/${ODS_VIRTUAL_NAME}/"
+      UseReverseProxyHeaders: "true"
       PathBase: "${DOCS_VIRTUAL_NAME}"
     depends_on:
       - api
@@ -115,6 +112,26 @@ services:
     restart: always
     hostname: swagger
     container_name: ed-fi-swagger
+
+  admin-pgbouncer:
+    image: pgbouncer/pgbouncer
+    environment:
+      DATABASES: "* = host = db-admin port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}"
+      PGBOUNCER_LISTEN_PORT: 6432
+    ports:
+      - "5401:6432"
+    restart: always
+    container_name: ed-fi-db-admin-pg-bouncer
+
+  ods-pgbouncer:
+    image: pgbouncer/pgbouncer
+    environment:
+      DATABASES: "* = host = db-ods port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}"
+      PGBOUNCER_LISTEN_PORT: 6432
+    ports:
+      - "5402:6432"
+    restart: always
+    container_name: ed-fi-db-ods-pg-bouncer
 
 volumes:
   vol-db-admin:
