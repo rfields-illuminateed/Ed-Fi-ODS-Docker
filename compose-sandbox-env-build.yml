@@ -54,6 +54,7 @@ services:
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_PORT: 6432
       API_MODE: "Sandbox"
       ODS_DB: ods-pgbouncer
       ADMIN_DB: admin-pgbouncer
@@ -75,14 +76,15 @@ services:
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_PORT: 6432
       ADMIN_USER: "${ADMIN_USER}"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
       MINIMAL_KEY: "${MINIMAL_KEY}"
       MINIMAL_SECRET: "${MINIMAL_SECRET}"
       POPULATED_KEY: "${POPULATED_KEY}"
       POPULATED_SECRET: "${POPULATED_SECRET}"
-      ODS_DB: db-ods
-      ADMIN_DB: db-admin
+      ODS_DB: ods-pgbouncer
+      ADMIN_DB: admin-pgbouncer
       PathBase: "${SANDBOX_ADMIN_VIRTUAL_NAME}"
       OAuthUrl: "https://localhost/${ODS_VIRTUAL_NAME}/oauth/"
     volumes:
@@ -116,22 +118,26 @@ services:
   admin-pgbouncer:
     image: pgbouncer/pgbouncer
     environment:
-      DATABASES: "* = host = db-admin port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}"
+      DATABASES: "* = host = db-admin port=${POSTGRES_PORT} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}"
       PGBOUNCER_LISTEN_PORT: 6432
     ports:
       - "5401:6432"
     restart: always
     container_name: ed-fi-db-admin-pg-bouncer
+    depends_on:
+      - db-admin
 
   ods-pgbouncer:
     image: pgbouncer/pgbouncer
     environment:
-      DATABASES: "* = host = db-ods port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}"
+      DATABASES: "* = host = db-ods port=${POSTGRES_PORT} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}"
       PGBOUNCER_LISTEN_PORT: 6432
     ports:
       - "5402:6432"
     restart: always
     container_name: ed-fi-db-ods-pg-bouncer
+    depends_on:
+      - db-ods
 
 volumes:
   vol-db-admin:
