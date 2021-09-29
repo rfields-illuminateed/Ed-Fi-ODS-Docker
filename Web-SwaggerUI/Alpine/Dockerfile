@@ -6,7 +6,7 @@
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 
-ENV VERSION="5.2.14406"
+ENV VERSION="5.3.758"
 ENV DOCS_VIRTUAL_NAME=docs
 ENV ODS_VIRTUAL_NAME=api
 ENV WebApiVersionUrl="https://localhost/${ODS_VIRTUAL_NAME}/"
@@ -21,7 +21,7 @@ WORKDIR /app
 COPY appsettings.template.json /app/appsettings.template.json
 COPY run.sh /app/run.sh
 
-RUN apk --no-cache add unzip=~6.0 dos2unix=~7.4 bash=~5.1 gettext=~0.20 icu=~67.1 && \
+RUN apk --no-cache add unzip=~6.0 dos2unix=~7.4 bash=~5.1 gettext=~0.21 icu=~67.1 && \
     wget -O /app/SwaggerUI.zip https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_apis/packaging/feeds/EdFi/nuget/packages/EdFi.Suite3.Ods.SwaggerUI/versions/${VERSION}/content && \
     unzip /app/SwaggerUI.zip -d /app && \
     rm -f /app/SwaggerUI.zip && \
