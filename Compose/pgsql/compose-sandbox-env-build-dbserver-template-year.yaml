@@ -68,7 +68,7 @@ services:
     restart: always
     hostname: nginx
     volumes:
-      - ~/Desktop/deleteme/ssl:/ssl/
+      - ../../ssl:/ssl/
     depends_on:
       - api
       - admin
