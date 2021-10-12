@@ -6,7 +6,7 @@
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 
-ENV VERSION="2.2.0"
+ENV VERSION="2.3.0-pre0037"
 ENV POSTGRES_PORT=5432
 ENV PGBOUNCER_LISTEN_PORT=6432
 ENV ADMINAPP_VIRTUAL_NAME=adminapp
@@ -21,7 +21,7 @@ COPY appsettings.template.json /app/appsettings.template.json
 COPY run.sh /app/run.sh
 COPY log4net.config /app/log4net.txt
 
-RUN apk --no-cache add unzip=~6.0 dos2unix=~7.4 bash=~5.1 gettext=~0.20 postgresql-client=~13.3 jq=~1.6 icu=~67.1 && \
+RUN apk --no-cache add unzip=~6.0 dos2unix=~7.4 bash=~5.1 gettext=~0.20 postgresql-client=~13.4 jq=~1.6 icu=~67.1 && \
     wget -O /app/AdminApp.zip  https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_apis/packaging/feeds/EdFi/nuget/packages/EdFi.Suite3.ODS.AdminApp.Web/versions/${VERSION}/content && \
     unzip /app/AdminApp.zip -d /app && \
     rm -f /app/AdminApp.zip && \
