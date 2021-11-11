@@ -1,0 +1,99 @@
+# SPDX-License-Identifier: Apache-2.0
+# Licensed to the Ed-Fi Alliance under one or more agreements.
+# The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+# See the LICENSE and NOTICES files in the project root for more information.
+
+version: "3.8"
+
+x-service: &db-ods
+  build:
+    context: ../../DB-Ods/Alpine/pgsql
+    dockerfile: Dockerfile
+  restart: always
+
+x-environment: &db-ods-environment
+  POSTGRES_USER: "${POSTGRES_USER}"
+  POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+
+x-service: &pb-ods
+  image: pgbouncer/pgbouncer
+  restart: always
+
+x-environment: &pb-ods-environment
+  DATABASES_PORT: "5432"
+  DATABASES_USER: "${POSTGRES_USER}"
+  DATABASES_PASSWORD: "${POSTGRES_PASSWORD}"
+  PGBOUNCER_LISTEN_PORT: "${PGBOUNCER_LISTEN_PORT:-6432}"
+
+x-volume:
+    &vol-db-ods
+    driver: local
+
+services:
+  api:
+    environment:
+      ODS_POSTGRES_HOST: EdFi_{0}
+      ODS_WAIT_POSTGRES_HOSTS: "pb-ods-2021 pb-ods-2022"
+      API_MODE: "YearSpecific"
+    depends_on:
+      - pb-ods-2021
+      - pb-ods-2022
+
+  adminapp:
+    environment:
+      ODS_POSTGRES_HOST: EdFi_{0}
+      ODS_WAIT_POSTGRES_HOSTS: "pb-ods-2021 pb-ods-2022"
+      API_MODE: "YearSpecific"
+    depends_on:
+      - pb-ods-2021
+      - pb-ods-2022
+
+  # ----- 2021 -----
+  db-ods-2021:
+    << : *db-ods
+    environment:
+      << : *db-ods-environment
+      ODS_DB: "EdFi_Ods_2021"
+    volumes:
+      - vol-db-ods-2021:/var/lib/postgresql/data
+    container_name: ed-fi-db-ods-2021
+
+  pb-ods-2021:
+    << : *pb-ods
+    ports:
+      # You can safely remove this if you're not expecting connections to the DB outside docker-compose scope
+      - "5402:${PGBOUNCER_LISTEN_PORT:-6432}"
+    environment:
+      << : *pb-ods-environment
+      DATABASES_HOST: "db-ods-2021"
+    depends_on:
+      - db-ods-2021
+    container_name: ed-fi-pb-ods-2021
+    hostname: EdFi_Ods_2021
+
+  # ----- 2022 -----
+  db-ods-2022:
+    << : *db-ods
+    environment:
+      << : *db-ods-environment
+      ODS_DB: "EdFi_Ods_2022"
+    volumes:
+      - vol-db-ods-2022:/var/lib/postgresql/data
+    container_name: ed-fi-db-ods-2022
+
+  pb-ods-2022:
+    << : *pb-ods
+    ports:
+      # You can safely remove this if you're not expecting connections to the DB outside docker-compose scope
+      - "5403:${PGBOUNCER_LISTEN_PORT:-6432}"
+    environment:
+      << : *pb-ods-environment
+      DATABASES_HOST: "db-ods-2022"
+    depends_on:
+      - db-ods-2022
+    container_name: ed-fi-pb-ods-2022
+    hostname: EdFi_Ods_2022
+
+volumes:
+  vol-db-ods-2021: *vol-db-ods
+  vol-db-ods-2022: *vol-db-ods

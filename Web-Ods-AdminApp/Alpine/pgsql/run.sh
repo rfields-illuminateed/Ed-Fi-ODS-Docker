@@ -16,10 +16,18 @@ jq --arg variable "$measurementId" '.AppSettings.GoogleAnalyticsMeasurementId = 
 
 mv /app/temp.json /app/appsettings.json
 
-until PGPASSWORD=$POSTGRES_PASSWORD psql -h $ODS_POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -c '\q';
+if [[ -z "$ODS_WAIT_POSTGRES_HOSTS" ]]; then
+  # if there are no hosts to wait then fallback to ODS_POSTGRES_HOST
+  $ODS_WAIT_POSTGRES_HOSTS = $ODS_POSTGRES_HOST
+fi
+
+for HOST in $($ODS_WAIT_POSTGRES_HOSTS)
 do
-  >&2 echo "ODS Postgres is unavailable - sleeping"
-  sleep 10
+  until PGPASSWORD=$POSTGRES_PASSWORD psql -h $HOST -p $POSTGRES_PORT -U $POSTGRES_USER -c '\q';
+  do
+    >&2 echo "ODS Postgres is unavailable - sleeping"
+    sleep 10
+  done
 done
 
 until PGPASSWORD=$POSTGRES_PASSWORD psql -h $ADMIN_POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -c '\q';
