@@ -11,10 +11,11 @@ envsubst < /app/appsettings.template.json > /app/appsettings.json
 
 if [[ -z "$ODS_WAIT_POSTGRES_HOSTS" ]]; then
   # if there are no hosts to wait then fallback to ODS_POSTGRES_HOST
-  $ODS_WAIT_POSTGRES_HOSTS = $ODS_POSTGRES_HOST
+  ODS_WAIT_POSTGRES_HOSTS=$ODS_POSTGRES_HOST
 fi
 
-for HOST in $($ODS_WAIT_POSTGRES_HOSTS)
+ODS_WAIT_POSTGRES_HOSTS_ARR=($ODS_WAIT_POSTGRES_HOSTS) 
+for HOST in $ODS_WAIT_POSTGRES_HOSTS_ARR
 do
   until PGPASSWORD=$POSTGRES_PASSWORD psql -h $HOST -p $POSTGRES_PORT -U $POSTGRES_USER -c '\q';
   do
