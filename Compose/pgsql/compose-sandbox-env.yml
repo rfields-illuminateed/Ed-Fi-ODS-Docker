@@ -109,10 +109,16 @@ services:
     container_name: ed-fi-swagger
 
   pb-admin:
-    image: pgbouncer/pgbouncer
+    build:
+      context: ../../PB-Admin/Alpine/pgsql
+      dockerfile: Dockerfile
+      args:
+        PGBOUNCER_VERSION: 1.17.0
     environment:
       DATABASES: "* = host = db-admin port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}"
       PGBOUNCER_LISTEN_PORT: "${PGBOUNCER_LISTEN_PORT:-6432}"
+      PGBOUNCER_LOG_CONNECTIONS: 0
+      PGBOUNCER_LOG_DISCONNECTIONS: 0
     ports:
       - "5401:${PGBOUNCER_LISTEN_PORT:-6432}"
     restart: always
@@ -121,10 +127,16 @@ services:
       - db-admin
 
   pb-ods:
-    image: pgbouncer/pgbouncer
+    build:
+      context: ../../PB-Admin/Alpine/pgsql
+      dockerfile: Dockerfile
+      args:
+        PGBOUNCER_VERSION: 1.17.0
     environment:
       DATABASES: "* = host = db-ods port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}"
       PGBOUNCER_LISTEN_PORT: "${PGBOUNCER_LISTEN_PORT:-6432}"
+      PGBOUNCER_LOG_CONNECTIONS: 0
+      PGBOUNCER_LOG_DISCONNECTIONS: 0
     ports:
       - "5402:${PGBOUNCER_LISTEN_PORT:-6432}"
     restart: always
